@@ -167,10 +167,8 @@
                 </div>
               ` : ''}
               <div class="video-actions">
-                ${v.url ? `<a href="${Utils.escape(v.url)}" target="_blank" class="btn btn-ghost btn-sm">▶️ 观看</a>` : ''}
-                <button class="btn btn-ghost btn-sm" onclick="toggleBreakdown('${v.id}')">
-                  ${v.breakdown ? '📝 拆解' : '✏️ 拆解'}
-                </button>
+                <button class="btn btn-ghost btn-sm" onclick="copySearchKeyword('${v.title.replace(/'/g, "\\'")}', '${v.author.replace(/'/g, "\\'")}')">🔍 去抖音搜同款</button>
+                <button class="btn btn-ghost btn-sm" onclick="toggleBreakdown('${v.id}')">📝 拆解</button>
                 <button class="btn btn-ghost btn-sm" onclick="toggleFavorite('${v.id}')">${v.favorite ? '⭐' : '☆'}</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteVideo('${v.id}')">🗑️</button>
               </div>
@@ -287,6 +285,57 @@
       showBreakdownId = videoId;
       renderPage();
       Utils.toast('拆解已保存');
+    }
+
+    // 复制搜索关键词到剪贴板
+    function copySearchKeyword(title, author) {
+      const keyword = title + ' ' + author;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(keyword).then(() => {
+          showCopyToast('🔍 已复制关键词，打开抖音搜索即可观看', keyword);
+        }).catch(() => {
+          fallbackCopy(keyword);
+        });
+      } else {
+        fallbackCopy(keyword);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showCopyToast('🔍 已复制关键词，打开抖音搜索即可观看', text);
+      } catch(e) {
+        Utils.toast('复制失败，请手动复制标题搜索', 'error');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function showCopyToast(msg, keyword) {
+      // 自定义大提示框
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay show';
+      modal.innerHTML = `
+        <div class="modal" style="text-align:center;">
+          <div style="font-size:48px;margin-bottom:12px;">✅</div>
+          <div style="font-size:16px;font-weight:600;margin-bottom:8px;">已复制搜索关键词</div>
+          <div style="background:var(--bg-hover);padding:12px;border-radius:8px;font-size:14px;color:var(--text-primary);margin-bottom:16px;word-break:break-all;border:1px solid var(--border);">
+            ${Utils.escape(keyword)}
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.6;">
+            请打开 <b>抖音App</b> → 点击搜索框 → 粘贴关键词<br>
+            即可找到同款热门视频
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="this.closest('.modal-overlay').remove()">我知道了</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
     }
 
     // 启动
