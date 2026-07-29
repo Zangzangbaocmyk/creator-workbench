@@ -36,51 +36,52 @@
         `;
       }
       
-      if (shouldFetch) {
-        try {
-          console.log('🔄 从云端同步热门视频数据...');
-          const resp = await fetch(DATA_URL + '?t=' + now);
-          if (!resp.ok) throw new Error('HTTP ' + resp.status);
-          const data = await resp.json();
-          if (Array.isArray(data) && data.length > 0) {
-            // 获取本地手动添加的视频ID（不覆盖用户手动添加的）
-            const currentVideos = Store.getVideos();
-            const localIds = new Set(currentVideos.filter(v => v._manual).map(v => v._originalId || v.id));
-            
-            // 清空旧的自动加载数据，保留手动添加的
-            const manualVideos = currentVideos.filter(v => v._manual);
-            Store.saveVideos(manualVideos);
-            
-            // 导入新数据
-            let count = 0;
-            data.forEach(v => {
-              if (!v.title) return;
-              const vid = v.title + '|' + v.author;
-              if (localIds.has(vid)) return;
-              
-              Store.addVideo({
-                title: v.title,
-                author: v.author || '未知',
-                url: v.url || '',
-                cover: v.cover || '',
-                likes: v.likes || 0,
-                comments: v.comments || 0,
-                shares: v.shares || 0,
-                views: v.views || 0,
-                tags: v.tags || [],
-                duration: v.duration || '',
-                publishedAt: v.publishedAt || '',
-                breakdown: v.breakdown || null,
-                _originalId: vid,
-              });
-              count++;
+      // 每次都尝试从云端拉取最新数据
+      try {
+        console.log('🔄 从云端同步热门视频数据...');
+        const resp = await fetch(DATA_URL + '?t=' + now);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const currentVideos = Store.getVideos();
+          
+          // 保留用户手动添加的视频
+          const manualVideos = currentVideos.filter(v => v._manual);
+          
+          // 获取云端数据的标识集合
+          const cloudIds = new Set(data.map(v => v.title + '|' + v.author));
+          
+          // 删除本地不在云端且非手动的视频
+          const keepVideos = currentVideos.filter(v => v._manual || !v._originalId);
+          
+          // 用云端数据完全替换
+          Store.saveVideos(manualVideos);
+          
+          let count = 0;
+          data.forEach(v => {
+            if (!v.title) return;
+            Store.addVideo({
+              title: v.title,
+              author: v.author || '未知',
+              url: v.url || '',
+              cover: v.cover || '',
+              likes: v.likes || 0,
+              comments: v.comments || 0,
+              shares: v.shares || 0,
+              views: v.views || 0,
+              tags: v.tags || [],
+              duration: v.duration || '',
+              publishedAt: v.publishedAt || '',
+              breakdown: v.breakdown || null,
+              _originalId: v.title + '|' + v.author,
             });
-            Store.set('data_last_updated', now);
-            console.log(`✅ 同步了 ${count} 条新视频`);
-          }
-        } catch(e) {
-          console.log('⚠️ 云端同步失败，使用本地缓存:', e.message);
+            count++;
+          });
+          Store.set('data_last_updated', now);
+          console.log(`✅ 已同步 ${count} 条视频`);
         }
+      } catch(e) {
+        console.log('⚠️ 云端同步失败，使用本地缓存:', e.message);
       }
       renderPage();
     }
