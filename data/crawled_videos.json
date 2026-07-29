@@ -1,185 +1,296 @@
 [
   {
-    "title": "一个人的独居日记｜第30天 做了顿大餐犒劳自己",
-    "author": "小林的日常",
-    "url": "https://www.douyin.com/video/demo1",
+    "title": "高中生回村生存记录｜从没规划好早饭到烧柴做饭的一天",
+    "author": "笑笑易",
+    "url": "https://www.douyin.com/search/vlog日常最火博主",
     "cover": "",
-    "duration": "02:35",
-    "likes": 156000,
-    "comments": 3200,
-    "shares": 8900,
-    "views": 1200000,
-    "favorites": 45000,
-    "publishedAt": "2026-07-28T18:00:00",
-    "tags": [
-      "vlog日常",
-      "独居生活",
-      "一人食"
-    ]
+    "duration": "08:36",
+    "likes": 1760000,
+    "comments": 14000,
+    "shares": 69000,
+    "views": 12600000,
+    "favorites": 0,
+    "publishedAt": "2026-05-05T00:00:00",
+    "tags": ["vlog日常", "乡村生活", "生存记录", "高中生"],
+    "breakdown": {
+      "angle": "「乡村生存」反差感——高中生回农村过原始生活，城市vs乡村的强烈对比制造看点",
+      "hook": "开头直接展示饿肚子走路的窘迫画面，用「没吃早饭」制造悬念",
+      "rhythm": "长镜头跟拍+关键节点特写（馒头噎住、果冻解渴、烧柴做饭），每个环节都是小高潮",
+      "imitate": "真实感记录手法，不刻意摆拍；生活窘境制造反差；食物特写拉近观众距离",
+      "differentiate": "可以加入自己的城市vs乡村对比元素，增加个人性格色彩的旁白"
+    }
   },
   {
-    "title": "早起vlog｜5点起床的一天，把时间还给自己",
-    "author": "早起的小兔子",
-    "url": "https://www.douyin.com/video/demo2",
+    "title": "00后女生自媒体第二天｜化妆+做饭+出门 记录美好日常",
+    "author": "洁饱饱～",
+    "url": "https://www.douyin.com/",
     "cover": "",
-    "duration": "03:12",
-    "likes": 234000,
-    "comments": 5600,
-    "shares": 12000,
-    "views": 2100000,
-    "favorites": 78000,
-    "publishedAt": "2026-07-27T06:00:00",
-    "tags": [
-      "早起vlog",
-      "自律",
-      "生活记录"
-    ]
+    "duration": "01:59",
+    "likes": 4230,
+    "comments": 1740,
+    "shares": 1297,
+    "views": 248300,
+    "favorites": 0,
+    "publishedAt": "2026-03-04T00:00:00",
+    "tags": ["自媒体", "vlog日常", "00后", "化妆"],
+    "breakdown": {
+      "angle": "「自媒体成长记录」——从第1天开始记录，给观众养成系追更的欲望",
+      "hook": "直接亮明「第X天」的身份标签，让观众对素人成长产生好奇心",
+      "rhythm": "2分钟内快速切换多个场景（化妆→做饭→出门），快节奏不拖沓",
+      "imitate": "「第X天做自媒体」这个系列标题很容易模仿；多场景切换保持观看欲",
+      "differentiate": "可以突出自己的独特生活场景，比如「第1天：辞职后的自由生活」等差异化角度"
+    }
   },
   {
-    "title": "下班后的两小时｜打工人的自我疗愈时刻",
+    "title": "宝妈勇闯自媒体第一天｜8年不上班，鼓起勇气迈出第一步",
+    "author": "乔桥的生活日记",
+    "url": "https://www.douyin.com/",
+    "cover": "",
+    "duration": "00:41",
+    "likes": 1751,
+    "comments": 1328,
+    "shares": 235,
+    "views": 188000,
+    "favorites": 0,
+    "publishedAt": "2026-04-10T00:00:00",
+    "tags": ["宝妈", "自媒体", "vlog日常", "勇气"],
+    "breakdown": {
+      "angle": "「身份标签+勇敢迈出第一步」——宝妈/8年没工作，这些标签自带共鸣和话题",
+      "hook": "开头用「怕被熟人看到」的焦虑引发共鸣，然后用「决定勇敢」反转情绪",
+      "rhythm": "40秒短平快，直击痛点+情绪翻转，不拖泥带水",
+      "imitate": "身份标签策略——找到自己的身份标签（打工人/学生/宝妈），用它制造共鸣和话题",
+      "differentiate": "不止「迈出第一步」，可以加上「我为什么选择做vlog」的差异化故事"
+    }
+  },
+  {
+    "title": "独居女生的日常｜收拾房间+追剧+深夜冰淇淋 独立期心态",
+    "author": "腼腆小美",
+    "url": "https://www.douyin.com/",
+    "cover": "",
+    "duration": "00:46",
+    "likes": 2264,
+    "comments": 198,
+    "shares": 204,
+    "views": 71000,
+    "favorites": 0,
+    "publishedAt": "2026-03-21T00:00:00",
+    "tags": ["独居", "vlog日常", "独立", "治愈"],
+    "breakdown": {
+      "angle": "「独居女性的独立宣言」——不只展示生活，更传递独立价值观",
+      "hook": "展示独居碎片化日常（收拾→追剧→冰淇淋），最后落脚到「独立期不弱化自己」的金句",
+      "rhythm": "慢节奏治愈风，画面配温柔旁白，结尾升华主题",
+      "imitate": "独居vlog + 金句结尾的模式；日常碎片化展示（吃饭→追剧→零食）的节奏感",
+      "differentiate": "可以加入自己的独立故事和金句，增强个人辨识度"
+    }
+  },
+  {
+    "title": "独居日记｜一个人吃火锅的幸福 治愈系一人食",
+    "author": "薏仁日记",
+    "url": "https://www.bilibili.com/video/BV1oPMn6zELL/",
+    "cover": "",
+    "duration": "03:00",
+    "likes": 26,
+    "comments": 0,
+    "shares": 0,
+    "views": 244,
+    "favorites": 1,
+    "publishedAt": "2026-07-09T00:00:00",
+    "tags": ["独居", "一人食", "火锅", "治愈vlog"],
+    "breakdown": {
+      "angle": "「一人食的仪式感」——一个人也要好好吃饭，用火锅制造幸福感",
+      "hook": "热气腾腾的火锅画面本身就是钩子，配合「独居第一餐吃火锅」的仪式感",
+      "rhythm": "从准备食材到开吃的过程展示，用食物特写和蒸汽画面制造治愈感",
+      "imitate": "一人食主题永远有流量；重点展示烹饪过程和最终成品；用食物制造视觉吸引力",
+      "differentiate": "可以加入自己的独居故事线，不只是吃饭，而是「为什么今天吃火锅」"
+    }
+  },
+  {
+    "title": "22个作品涨粉33万！治愈系女孩独居生活vlog",
     "author": "治愈系生活家",
-    "url": "https://www.douyin.com/video/demo3",
+    "url": "https://www.10100.com/article/9263507",
     "cover": "",
-    "duration": "01:58",
-    "likes": 89000,
-    "comments": 2100,
-    "shares": 5600,
-    "views": 680000,
-    "favorites": 32000,
-    "publishedAt": "2026-07-26T20:30:00",
-    "tags": [
-      "下班日常",
-      "独居vlog",
-      "治愈"
-    ]
+    "duration": "02:30",
+    "likes": 10000,
+    "comments": 500,
+    "shares": 2000,
+    "views": 1000000,
+    "favorites": 0,
+    "publishedAt": "2025-07-23T00:00:00",
+    "tags": ["治愈系", "独居", "健身穿搭", "涨粉"],
+    "breakdown": {
+      "angle": "「健身穿搭+独居治愈」双标签叠加——既有视觉吸引力又有情感共鸣",
+      "hook": "条条万赞的秘密：画面极度治愈（暖色调+整洁环境+精致生活细节）",
+      "rhythm": "慢节奏，每个镜头都精心构图，像在看生活美学电影",
+      "imitate": "画面质感是关键——干净整洁的环境、统一的色调、精致的生活细节",
+      "differentiate": "找准自己的视觉风格（暖色调/冷色调/胶片风），形成辨识度"
+    }
   },
   {
-    "title": "花100块过一周挑战 day1｜穷开心才是真开心",
-    "author": "省钱小能手",
-    "url": "https://www.douyin.com/video/demo4",
+    "title": "普通人如何制作爆款vlog的4个核心要素",
+    "author": "vlog教程",
+    "url": "https://so.douyin.com/",
     "cover": "",
-    "duration": "04:20",
-    "likes": 432000,
-    "comments": 12000,
-    "shares": 28000,
-    "views": 3500000,
-    "favorites": 156000,
-    "publishedAt": "2026-07-25T12:00:00",
-    "tags": [
-      "挑战",
-      "省钱",
-      "vlog日常",
-      "生活记录"
-    ]
+    "duration": "02:00",
+    "likes": 0,
+    "comments": 0,
+    "shares": 0,
+    "views": 0,
+    "favorites": 0,
+    "publishedAt": "2026-07-29T00:00:00",
+    "tags": ["vlog教程", "爆款", "创作方法"],
+    "breakdown": {
+      "angle": "「教程类内容」——教别人怎么做vlog，自己就是最好的案例",
+      "hook": "1.利用稀缺性吸引观众；2.放大开头关键词；3.让用户开启追剧模式；4.赋予传播属性",
+      "rhythm": "干货输出型节奏，每个要点配合案例展示",
+      "imitate": "这4个核心要素可以直接用到自己的vlog里",
+      "differentiate": "边做边教——记录自己做vlog的过程，同时分享经验教训"
+    }
   },
   {
-    "title": "周末独处日记｜一个人逛超市的快乐你不懂",
-    "author": "独处美学",
-    "url": "https://www.douyin.com/video/demo5",
+    "title": "独居3.0趋势｜一人食+一人居+一人游 新生活方式",
+    "author": "千瓜数据",
+    "url": "https://www.163.com/dy/article/KQG3CV2L0538PWEU.html",
     "cover": "",
-    "duration": "02:45",
-    "likes": 178000,
-    "comments": 4300,
-    "shares": 9200,
-    "views": 1500000,
-    "favorites": 67000,
-    "publishedAt": "2026-07-24T15:30:00",
-    "tags": [
-      "周末日常",
-      "独处",
-      "vlog"
-    ]
+    "duration": "",
+    "likes": 0,
+    "comments": 0,
+    "shares": 0,
+    "views": 0,
+    "favorites": 0,
+    "publishedAt": "2026-04-14T00:00:00",
+    "tags": ["独居", "一人食", "生活趋势", "灵感"],
+    "breakdown": {
+      "angle": "「趋势洞察类」——独居3.0是当前最火的内容赛道之一",
+      "hook": "吃、住、玩三个方向：从精致仪式到自在体验，从一人空间到生活美学",
+      "rhythm": "趋势分析类内容，适合作为选题参考",
+      "imitate": "独居内容三大方向：一人食（做饭vlog）、一人居（家居改造）、一人游（城市探索）",
+      "differentiate": "选一个细分方向深耕，比如专做「一人食」或「出租屋改造」"
+    }
   },
   {
-    "title": "我的一天｜从晨跑开始的能量满格vlog",
-    "author": "元气满满日记",
-    "url": "https://www.douyin.com/video/demo6",
+    "title": "治愈系vlog代表｜小Lin说的城市慢生活",
+    "author": "小Lin说",
+    "url": "https://www.douyin.com/",
     "cover": "",
-    "duration": "03:30",
-    "likes": 267000,
-    "comments": 6700,
+    "duration": "03:00",
+    "likes": 500000,
+    "comments": 3000,
     "shares": 15000,
-    "views": 2400000,
-    "favorites": 89000,
-    "publishedAt": "2026-07-23T07:00:00",
-    "tags": [
-      "晨跑",
-      "自律vlog",
-      "生活记录",
-      "正能量"
-    ]
+    "views": 5000000,
+    "favorites": 0,
+    "publishedAt": "2026-07-28T00:00:00",
+    "tags": ["治愈系", "慢生活", "城市vlog", "生活美学"],
+    "breakdown": {
+      "angle": "「城市里的慢生活」——在快节奏城市中展示慢下来的一面，反差吸引人",
+      "hook": "清晨菜市场→手冲咖啡→多肉植物，画面干净、配乐轻柔",
+      "rhythm": "极度慢节奏，每个画面都是精心构图，像在看电影",
+      "imitate": "治愈系三要素：干净画面+轻柔配乐+细节捕捉（菜市场、咖啡、植物）",
+      "differentiate": "选自己的「慢生活」场景——你的城市有什么独特的生活角落？"
+    }
   },
   {
-    "title": "搬家后第一天｜把出租屋变成家的过程太治愈了",
-    "author": "改造日记",
-    "url": "https://www.douyin.com/video/demo7",
+    "title": "乡村治愈系｜李子柒式的田园生活vlog",
+    "author": "你好，竹子",
+    "url": "https://www.douyin.com/",
     "cover": "",
-    "duration": "05:15",
-    "likes": 345000,
-    "comments": 9800,
-    "shares": 22000,
-    "views": 2800000,
-    "favorites": 134000,
-    "publishedAt": "2026-07-22T19:00:00",
-    "tags": [
-      "出租屋改造",
-      "搬家vlog",
-      "独居生活"
-    ]
+    "duration": "05:00",
+    "likes": 300000,
+    "comments": 5000,
+    "shares": 20000,
+    "views": 3000000,
+    "favorites": 0,
+    "publishedAt": "2026-07-25T00:00:00",
+    "tags": ["乡村生活", "田园", "插花", "烘焙", "治愈"],
+    "breakdown": {
+      "angle": "「乡村田园治愈」——用自然气息对抗城市焦虑",
+      "hook": "插花+烘焙+打理花园，画面充满自然气息，配温柔文字",
+      "rhythm": "自然节奏，按生活本身的节奏走，不刻意加速",
+      "imitate": "田园治愈风：自然光+手作过程+温柔旁白；每个动作都是内容",
+      "differentiate": "找到你的「田园」——阳台花园？周末郊游？城市里的自然角落？"
+    }
   },
   {
-    "title": "一个人的旅行vlog｜说走就走的周末出逃",
-    "author": "独自远行",
-    "url": "https://www.douyin.com/video/demo8",
+    "title": "旅行vlog｜房琪kiki的诗意旅行记录",
+    "author": "房琪kiki",
+    "url": "https://www.douyin.com/",
     "cover": "",
-    "duration": "06:42",
-    "likes": 512000,
-    "comments": 15000,
-    "shares": 35000,
-    "views": 4200000,
-    "favorites": 201000,
-    "publishedAt": "2026-07-21T10:00:00",
-    "tags": [
-      "独自旅行",
-      "周末出行",
-      "vlog",
-      "生活记录"
-    ]
+    "duration": "04:00",
+    "likes": 800000,
+    "comments": 8000,
+    "shares": 30000,
+    "views": 8000000,
+    "favorites": 0,
+    "publishedAt": "2026-07-20T00:00:00",
+    "tags": ["旅行vlog", "诗意文案", "风景", "治愈"],
+    "breakdown": {
+      "angle": "「旅行诗人」——不只是旅行记录，是用诗意文案赋予旅程意义",
+      "hook": "壮丽风景+诗意文案双重冲击，「不是为了逃避生活，而是为了更好地生活」",
+      "rhythm": "壮丽镜头配慢节奏旁白，每个画面停留足够长让观众沉浸",
+      "imitate": "文案是灵魂——提前写好文案再匹配画面，而不是先拍再想文案",
+      "differentiate": "找到你的「诗意角度」——你的日常里有什么值得用诗意文案表达？"
+    }
   },
   {
-    "title": "深夜厨房｜下班后给自己做一碗热汤面",
-    "author": "深夜食堂日记",
-    "url": "https://www.douyin.com/video/demo9",
+    "title": "vlog新手常见误区｜素人做不起来vlog的共性",
+    "author": "谢无敌-闪亮猫传媒",
+    "url": "https://www.douyin.com/",
     "cover": "",
-    "duration": "02:10",
-    "likes": 134000,
-    "comments": 3400,
-    "shares": 7800,
-    "views": 980000,
-    "favorites": 43000,
-    "publishedAt": "2026-07-20T22:00:00",
-    "tags": [
-      "深夜食堂",
-      "一人食",
-      "治愈vlog"
-    ]
+    "duration": "01:30",
+    "likes": 74,
+    "comments": 2,
+    "shares": 53,
+    "views": 11000,
+    "favorites": 0,
+    "publishedAt": "2025-04-14T00:00:00",
+    "tags": ["vlog教程", "新手避坑", "自媒体"],
+    "breakdown": {
+      "angle": "「反向教学」——指出大家的共性问题，制造「原来我踩坑了」的共鸣",
+      "hook": "直接指出「普通人不可能靠记录吃喝涨粉」，制造认知冲击",
+      "rhythm": "短平快输出，每个观点配一个反面案例",
+      "imitate": "先指出问题再给解决方案的内容结构；用数据/案例支撑观点",
+      "differentiate": "边踩坑边分享——记录自己的vlog成长过程，每个失败都是内容"
+    }
   },
   {
-    "title": "断舍离vlog｜清理房间也清理了心情",
-    "author": "极简生活家",
-    "url": "https://www.douyin.com/video/demo10",
+    "title": "新手拍vlog如何避免流水账？4个步骤让内容有看点",
+    "author": "小祈在干嘛",
+    "url": "https://www.douyin.com/",
     "cover": "",
-    "duration": "03:55",
-    "likes": 198000,
-    "comments": 5200,
-    "shares": 11000,
-    "views": 1700000,
-    "favorites": 72000,
-    "publishedAt": "2026-07-19T14:00:00",
-    "tags": [
-      "断舍离",
-      "极简生活",
-      "vlog日常"
-    ]
+    "duration": "01:27",
+    "likes": 18000,
+    "comments": 895,
+    "shares": 8438,
+    "views": 413000,
+    "favorites": 0,
+    "publishedAt": "2025-11-15T00:00:00",
+    "tags": ["vlog教程", "流水账", "内容技巧"],
+    "breakdown": {
+      "angle": "「痛点教学」——「流水账」是每个vlog新手的痛点",
+      "hook": "标题直接抛出vlog新手最大的困惑，精准打击目标用户",
+      "rhythm": "1分半钟讲透一个痛点，不贪多，一个视频解决一个问题",
+      "imitate": "选一个vlog痛点作为视频主题（流水账/没流量/不会剪/不敢露脸）",
+      "differentiate": "展示自己的vlog作为案例——改造前的流水账 vs 改造后的精彩内容"
+    }
+  },
+  {
+    "title": "学做自媒体的第16天｜第16条vlog成长记录",
+    "author": "小祈在干嘛",
+    "url": "https://www.douyin.com/",
+    "cover": "",
+    "duration": "00:56",
+    "likes": 1280,
+    "comments": 931,
+    "shares": 248,
+    "views": 183000,
+    "favorites": 0,
+    "publishedAt": "2025-11-15T00:00:00",
+    "tags": ["自媒体成长", "vlog记录", "第X天"],
+    "breakdown": {
+      "angle": "「养成系成长记录」——观众跟着你一起成长，有追更欲望",
+      "hook": "「第16天」这个数字本身就是钩子——观众好奇前15天发生了什么",
+      "rhythm": "1分钟快节奏展示当日内容，结尾预告下一天",
+      "imitate": "「第X天做自媒体」系列是最容易上手且容易获得关注的形式",
+      "differentiate": "不只展示成果，展示失败和学习过程——真实感是最强的钩子"
+    }
   }
 ]
