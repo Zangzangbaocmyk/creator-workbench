@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>灵感库 · 创作者工作台</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <script src="assets/app.js"></script>
+  <script>
+    let currentCategory = 'all';
+
+    const CATEGORIES = [
+      { key: '选题灵感', icon: '🎯', color: 'badge-danger' },
+      { key: '拍摄技巧', icon: '📹', color: 'badge-info' },
+      { key: '剪辑灵感', icon: '✂️', color: 'badge-purple' },
+      { key: '文案灵感', icon: '✍️', color: 'badge-success' },
+      { key: '标题灵感', icon: '🏷️', color: 'badge-warning' },
+      { key: '转场创意', icon: '🎬', color: 'badge-info' },
+      { key: 'BGM灵感', icon: '🎵', color: 'badge-purple' },
+      { key: '其他', icon: '💡', color: 'badge-muted' },
+    ];
+
+    // 预置灵感库
+    const DEFAULT_INSPIRATIONS = [
+      {
+        title: '「一天生活浓缩成60秒」系列',
+        description: '把从早到晚的一天用快剪手法压缩到60秒，每个场景2-3秒，配合节奏感强的BGM，制造「时间飞逝」的沉浸感。适合做日常vlog的开头或高潮段落。',
+        category: '选题灵感',
+        source: '创作方法论',
+      },
+      {
+        title: '「同一件事做7天」挑战',
+        description: '比如「连续7天早起vlog」「7天只吃自己做饭」等。连续性内容容易建立追更感，观众会想知道最终结果。每条单独看也有完整故事线。',
+        category: '选题灵感',
+        source: '热门挑战模式',
+      },
+      {
+        title: '反转式开头',
+        description: '视频开头展示一个意想不到的结果或场景，然后倒叙讲述过程。比如先放成品，再说「你绝对想不到这只是用了...」。前3秒抓住好奇心。',
+        category: '拍摄技巧',
+        source: '短视频黄金3秒法则',
+      },
+      {
+        title: 'ASMR式生活细节放大',
+        description: '把日常生活中的声音放大——煎蛋的滋滋声、拉窗帘的哗啦声、踩落叶的咔嚓声。不说话，纯靠环境音+特写镜头营造沉浸感。',
+        category: '拍摄技巧',
+        source: 'ASMR赛道',
+      },
+      {
+        title: '走路/骑行跟拍长镜头',
+        description: '用稳定器跟拍走路或骑行的长镜头，镜头自然晃动，配合环境BGM，营造「和你一起散步」的第一视角体验感。适合做过渡段落。',
+        category: '拍摄技巧',
+        source: '第一视角vlog',
+      },
+      {
+        title: '卡点剪辑 + 画面加速',
+        description: '选一首节奏分明的BGM，在重拍处切画面。日常场景（做饭、打扫）用2-3倍速处理，关键画面正常速度。快慢交替制造节奏感。',
+        category: '剪辑灵感',
+        source: '卡点视频流行趋势',
+      },
+      {
+        title: '遮挡转场',
+        description: '用手、衣服、门框等遮挡镜头完成转场。比如推开手就到了另一个场景。拍摄简单，效果流畅，是vlog最常用的转场技巧之一。',
+        category: '转场创意',
+        source: '经典转场技巧',
+      },
+      {
+        title: '物品匹配转场',
+        description: '上个镜头的物品和下个镜头的物品形状/颜色匹配。比如咖啡杯→轮胎→太阳，形成视觉连贯的跳跃感。需要提前设计拍摄。',
+        category: '转场创意',
+        source: '视觉匹配剪辑',
+      },
+      {
+        title: '「今天我想和你说」对话式文案',
+        description: '用「和好朋友聊天」的口吻写文案，像在跟观众面对面说话。比如「今天发生了一件特别搞笑的事...」。拉近距离，增加评论互动。',
+        category: '文案灵感',
+        source: '对话式内容',
+      },
+      {
+        title: '数字标题公式',
+        description: '标题里带具体数字：「3分钟学会...」「花100块...」「试了5次终于...」。数字制造具体感和好奇心，点击率比模糊标题高30%+。',
+        category: '标题灵感',
+        source: '标题点击率研究',
+      },
+      {
+        title: '反常识/反预期标题',
+        description: '标题暗示一个反直觉的结论，让观众忍不住点进来看为什么。比如「月薪3000的我，活得比月薪3万开心」。注意内容要支撑标题。',
+        category: '标题灵感',
+        source: '标题心理学',
+      },
+      {
+        title: '环境音+轻BGM双层音轨',
+        description: '保留环境真实声音（低音量），叠加一首轻柔BGM。既有沉浸感又有氛围感。推荐使用lo-fi、轻钢琴类不抢注意力的音乐。',
+        category: 'BGM灵感',
+        source: 'vlog音轨设计',
+      },
+      {
+        title: '情绪曲线BGM切换',
+        description: '视频不同情绪段落切换不同BGM。平静段用轻音乐，高潮段换节奏强的。切换点要和画面节奏匹配，制造情绪起伏。',
+        category: 'BGM灵感',
+        source: '情绪叙事',
+      },
+      {
+        title: '「给你看我的一天」沉浸式vlog',
+        description: '不加旁白解说，纯靠画面+字幕+BGM讲述一天。字幕用对话体或内心独白体。适合不想露脸说话的创作者，也有独特文艺感。',
+        category: '选题灵感',
+        source: '沉浸式内容趋势',
+      },
+      {
+        title: '对比蒙太奇手法',
+        description: '把两种对比强烈的画面交叉剪辑。比如「理想vs现实」「周一vs周五」「化妆前vs化妆后」。对比制造冲突感和趣味性，容易引发共鸣。',
+        category: '剪辑灵感',
+        source: '蒙太奇理论',
+      },
+      {
+        title: '「送给未来的自己」结尾彩蛋',
+        description: '每条vlog结尾留一段话给未来的自己或观众。比如「一年后看到这条视频的你，还好吗？」制造时间胶囊感，增加情感连接和转发。',
+        category: '文案灵感',
+        source: '情感共鸣设计',
+      },
+    ];
+
+    function ensureDefaults() {
+      const existing = Store.getInspirations();
+      if (existing.length === 0) {
+        DEFAULT_INSPIRATIONS.forEach((insp, i) => {
+          Store.addInspiration({ ...insp, used: false, isDefault: true });
+        });
+      }
+    }
+
+    function renderPage() {
+      ensureDefaults();
+      const inspirations = Store.getInspirations();
+      initPage('inspiration', '灵感库', '每日创作灵感 · 选题/拍摄/剪辑/文案素材积累');
+
+      const actions = document.getElementById('page-actions');
+      actions.innerHTML = `
+        <button class="btn btn-ghost" onclick="generateDailyInspiration()">🎲 今日灵感</button>
+        <button class="btn btn-primary" onclick="openAddInspirationModal()">➕ 添加灵感</button>
+      `;
+
+      const content = document.getElementById('page-content');
+
+      const unused = inspirations.filter(i => !i.used);
+      const used = inspirations.filter(i => i.used);
+      const todayInsp = Store.get('daily_inspiration');
+
+      content.innerHTML = `
+        <!-- 今日推荐灵感 -->
+        <div class="card" style="border-color:var(--accent);background:linear-gradient(135deg,var(--bg-card),var(--accent-soft));">
+          <div class="card-header">
+            <div class="card-title">🎯 今日推荐灵感</div>
+            <button class="btn btn-ghost btn-sm" onclick="generateDailyInspiration()">🔄 换一个</button>
+          </div>
+          ${todayInsp ? `
+            <div style="font-size:18px;font-weight:700;margin-bottom:8px;">${Utils.escape(todayInsp.title)}</div>
+            <div style="font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">${Utils.escape(todayInsp.description)}</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span class="badge ${getCatColor(todayInsp.category)}">${getCatIcon(todayInsp.category)} ${todayInsp.category}</span>
+              <span style="font-size:12px;color:var(--text-muted);">来源：${Utils.escape(todayInsp.source || '原创')}</span>
+              <button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="useInspiration('${todayInsp.id}')">📌 我要用这个</button>
+            </div>
+          ` : `
+            <div style="color:var(--text-secondary);">点击「今日灵感」随机抽取一条灵感推荐给你</div>
+          `}
+        </div>
+
+        <!-- 统计 -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">灵感总数</div>
+            <div class="stat-value">${inspirations.length}</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">待使用</div>
+            <div class="stat-value">${unused.length}</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-label">已使用</div>
+            <div class="stat-value">${used.length}</div>
+          </div>
+          <div class="stat-card yellow">
+            <div class="stat-label">分类数</div>
+            <div class="stat-value">${new Set(inspirations.map(i => i.category)).size}</div>
+          </div>
+        </div>
+
+        <!-- 分类筛选 -->
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn ${currentCategory === 'all' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="setCategory('all')">全部 (${inspirations.length})</button>
+            ${CATEGORIES.map(cat => {
+              const count = inspirations.filter(i => i.category === cat.key).length;
+              return count > 0 
+                ? `<button class="btn ${currentCategory === cat.key ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="setCategory('${cat.key}')">${cat.icon} ${cat.key} (${count})</button>`
+                : '';
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- 灵感列表 -->
+        <div id="inspiration-list">
+          ${renderInspirationList()}
+        </div>
+      `;
+    }
+
+    function renderInspirationList() {
+      let inspirations = Store.getInspirations();
+      if (currentCategory !== 'all') {
+        inspirations = inspirations.filter(i => i.category === currentCategory);
+      }
+
+      if (inspirations.length === 0) {
+        return `
+          <div class="card">
+            <div class="empty-state">
+              <div class="icon">💡</div>
+              <div class="title">暂无灵感</div>
+              <div class="desc">点击右上角「添加灵感」开始积累</div>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="inspiration-grid">
+          ${inspirations.map(insp => `
+            <div class="inspiration-card" style="${insp.used ? 'opacity:0.6;' : ''}">
+              <div class="category-tag">
+                <span class="badge ${getCatColor(insp.category)}">${getCatIcon(insp.category)}</span>
+              </div>
+              <div class="inspiration-title">${Utils.escape(insp.title)}</div>
+              <div class="inspiration-desc">${Utils.escape(insp.description)}</div>
+              <div class="inspiration-footer">
+                <span>${insp.source ? '来源：' + Utils.escape(insp.source) : '原创'}</span>
+                <span>${Utils.timeAgo(insp.createdAt)}</span>
+              </div>
+              <div style="display:flex;gap:6px;margin-top:10px;">
+                <button class="btn ${insp.used ? 'btn-ghost' : 'btn-success'} btn-sm" style="${insp.used ? '' : 'background:var(--success-soft);color:var(--success);'}" onclick="useInspiration('${insp.id}')">
+                  ${insp.used ? '↩️ 重新可用' : '📌 标记已用'}
+                </button>
+                <button class="btn btn-ghost btn-sm" onclick="editInspiration('${insp.id}')">✏️</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteInspiration('${insp.id}')">🗑️</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function getCatColor(cat) {
+      const c = CATEGORIES.find(x => x.key === cat);
+      return c ? c.color : 'badge-muted';
+    }
+
+    function getCatIcon(cat) {
+      const c = CATEGORIES.find(x => x.key === cat);
+      return c ? c.icon : '💡';
+    }
+
+    function setCategory(cat) {
+      currentCategory = cat;
+      document.getElementById('inspiration-list').innerHTML = renderInspirationList();
+      // 更新按钮
+      const buttons = document.querySelectorAll('.card .btn-sm');
+      buttons.forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-ghost');
+      });
+      event.target.classList.remove('btn-ghost');
+      event.target.classList.add('btn-primary');
+    }
+
+    function generateDailyInspiration() {
+      const unused = Store.getInspirations().filter(i => !i.used);
+      const pool = unused.length > 0 ? unused : Store.getInspirations();
+      if (pool.length === 0) {
+        Utils.toast('灵感库为空，请先添加灵感', 'error');
+        return;
+      }
+      const random = pool[Math.floor(Math.random() * pool.length)];
+      Store.set('daily_inspiration', random);
+      renderPage();
+      Utils.toast('今日灵感已生成 🎯');
+    }
+
+    function useInspiration(id) {
+      Store.toggleInspirationUsed(id);
+      renderPage();
+    }
+
+    function deleteInspiration(id) {
+      if (confirm('确定删除这条灵感？')) {
+        Store.deleteInspiration(id);
+        renderPage();
+        Utils.toast('灵感已删除');
+      }
+    }
+
+    function openAddInspirationModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay show';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">💡 添加灵感</div>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+          </div>
+          <div class="form-group">
+            <label class="label">灵感标题 *</label>
+            <input class="input" id="insp-title" placeholder="一句话概括灵感">
+          </div>
+          <div class="form-group">
+            <label class="label">详细描述</label>
+            <textarea class="textarea" id="insp-desc" style="min-height:100px;" placeholder="详细描述这个灵感：怎么用？适用什么场景？具体做法..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="label">分类</label>
+              <select class="select" id="insp-category">
+                ${CATEGORIES.map(c => `<option value="${c.key}">${c.icon} ${c.key}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="label">来源</label>
+              <input class="input" id="insp-source" placeholder="自己想的/看到某视频/某文章...">
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">取消</button>
+            <button class="btn btn-primary" onclick="submitInspiration()">添加</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function submitInspiration() {
+      const title = document.getElementById('insp-title').value.trim();
+      if (!title) { Utils.toast('请输入灵感标题', 'error'); return; }
+      
+      Store.addInspiration({
+        title,
+        description: document.getElementById('insp-desc').value.trim(),
+        category: document.getElementById('insp-category').value,
+        source: document.getElementById('insp-source').value.trim(),
+        used: false,
+      });
+      document.querySelector('.modal-overlay').remove();
+      renderPage();
+      Utils.toast('灵感已添加 💡');
+    }
+
+    function editInspiration(id) {
+      const insp = Store.getInspirations().find(x => x.id === id);
+      if (!insp) return;
+      
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay show';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">✏️ 编辑灵感</div>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+          </div>
+          <div class="form-group">
+            <label class="label">灵感标题</label>
+            <input class="input" id="edit-title" value="${Utils.escape(insp.title)}">
+          </div>
+          <div class="form-group">
+            <label class="label">详细描述</label>
+            <textarea class="textarea" id="edit-desc" style="min-height:100px;">${Utils.escape(insp.description)}</textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="label">分类</label>
+              <select class="select" id="edit-category">
+                ${CATEGORIES.map(c => `<option value="${c.key}" ${insp.category === c.key ? 'selected' : ''}>${c.icon} ${c.key}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="label">来源</label>
+              <input class="input" id="edit-source" value="${Utils.escape(insp.source || '')}">
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">取消</button>
+            <button class="btn btn-primary" onclick="saveEditInspiration('${id}')">保存</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function saveEditInspiration(id) {
+      const list = Store.getInspirations();
+      const insp = list.find(x => x.id === id);
+      if (!insp) return;
+      
+      insp.title = document.getElementById('edit-title').value.trim();
+      insp.description = document.getElementById('edit-desc').value.trim();
+      insp.category = document.getElementById('edit-category').value;
+      insp.source = document.getElementById('edit-source').value.trim();
+      Store.set('inspirations', list);
+      
+      document.querySelector('.modal-overlay').remove();
+      renderPage();
+      Utils.toast('灵感已更新');
+    }
+
+    renderPage();
+  </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>今日任务 · 创作者工作台</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <script src="assets/app.js"></script>
+  <script>
+    // ====== 主界面逻辑 ======
+    function renderPage() {
+      const stats = Store.getStats();
+      const tasks = Store.getTasks();
+      const today = new Date().toDateString();
+      const todayTasks = tasks.filter(t => new Date(t.createdAt).toDateString() === today);
+      const yesterdayTasks = tasks.filter(t => {
+        const y = new Date();
+        y.setDate(y.getDate() - 1);
+        return new Date(t.createdAt).toDateString() === y.toDateString();
+      });
+      const otherTasks = tasks.filter(t => 
+        new Date(t.createdAt).toDateString() !== today &&
+        !yesterdayTasks.includes(t)
+      );
+
+      initPage('index', '今日任务看板', `${Utils.today()} ${Utils.weekDay()} · 今天也要好好创作`);
+
+      const content = document.getElementById('page-content');
+      const actions = document.getElementById('page-actions');
+
+      actions.innerHTML = `
+        <button class="btn btn-primary" onclick="openAddTaskModal()">
+          ➕ 添加任务
+        </button>
+      `;
+
+      // 统计卡片
+      const doneRate = stats.todayTasks > 0 
+        ? Math.round((stats.doneTasks / stats.todayTasks) * 100) 
+        : 0;
+
+      content.innerHTML = `
+        <!-- 统计概览 -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">今日任务</div>
+            <div class="stat-value">${stats.todayTasks}</div>
+            <div class="stat-trend">已完成 ${stats.doneTasks} 项</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">完成率</div>
+            <div class="stat-value">${doneRate}%</div>
+            <div class="stat-trend">${doneRate === 100 ? '全部完成！🎉' : '继续加油 💪'}</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">收藏视频</div>
+            <div class="stat-value">${stats.totalVideos}</div>
+            <div class="stat-trend">可拆解二创素材</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-label">灵感待用</div>
+            <div class="stat-value">${stats.unusedInspirations}</div>
+            <div class="stat-trend">未使用的创作灵感</div>
+          </div>
+        </div>
+
+        <!-- 今日任务 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 今日任务</div>
+            <span class="badge ${stats.doneTasks === stats.todayTasks && stats.todayTasks > 0 ? 'badge-success' : 'badge-muted'}">
+              ${stats.doneTasks}/${stats.todayTasks}
+            </span>
+          </div>
+          <div class="task-list" id="today-tasks">
+            ${renderTaskList(todayTasks)}
+          </div>
+        </div>
+
+        <!-- 昨日任务（回顾） -->
+        ${yesterdayTasks.length > 0 ? `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📅 昨日回顾</div>
+              <span class="badge badge-muted">${yesterdayTasks.filter(t => t.done).length}/${yesterdayTasks.length}</span>
+            </div>
+            <div class="task-list">
+              ${renderTaskList(yesterdayTasks)}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- 快捷入口 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">⚡ 快捷入口</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+            <a href="trending.html" class="card" style="display:block;text-decoration:none;color:inherit;cursor:pointer;margin:0;">
+              <div style="font-size:32px;margin-bottom:8px;">🔥</div>
+              <div style="font-weight:600;margin-bottom:4px;">热门视频</div>
+              <div style="font-size:12px;color:var(--text-secondary);">爬取抖音vlog热门，拆解二创</div>
+            </a>
+            <a href="review.html" class="card" style="display:block;text-decoration:none;color:inherit;cursor:pointer;margin:0;">
+              <div style="font-size:32px;margin-bottom:8px;">📊</div>
+              <div style="font-weight:600;margin-bottom:4px;">内容复盘</div>
+              <div style="font-size:12px;color:var(--text-secondary);">四维度复盘，追踪优化点</div>
+            </a>
+            <a href="inspiration.html" class="card" style="display:block;text-decoration:none;color:inherit;cursor:pointer;margin:0;">
+              <div style="font-size:32px;margin-bottom:8px;">💡</div>
+              <div style="font-weight:600;margin-bottom:4px;">灵感库</div>
+              <div style="font-size:12px;color:var(--text-secondary);">每日灵感来源，创意积累</div>
+            </a>
+          </div>
+        </div>
+
+        <!-- 更早的任务 -->
+        ${otherTasks.length > 0 ? `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📦 历史任务</div>
+              <button class="btn btn-ghost btn-sm" onclick="clearOldTasks()">清理已完成</button>
+            </div>
+            <div class="task-list">
+              ${renderTaskList(otherTasks.slice(0, 10))}
+            </div>
+          </div>
+        ` : ''}
+      `;
+
+      bindTaskEvents();
+    }
+
+    function renderTaskList(tasks) {
+      if (tasks.length === 0) {
+        return `
+          <div class="empty-state">
+            <div class="icon">📝</div>
+            <div class="title">暂无任务</div>
+            <div class="desc">点击右上角「添加任务」开始规划</div>
+          </div>
+        `;
+      }
+      return tasks.map(t => `
+        <div class="task-item ${t.done ? 'done' : ''}" data-id="${t.id}">
+          <div class="task-checkbox ${t.done ? 'checked' : ''}" onclick="toggleTask('${t.id}')"></div>
+          <div class="task-content">
+            <div class="task-text">${Utils.escape(t.text)}</div>
+            <div class="task-meta">
+              ${t.priority === 'high' ? '<span class="badge badge-danger">高优先</span>' : ''}
+              ${t.priority === 'medium' ? '<span class="badge badge-warning">中优先</span>' : ''}
+              ${t.priority === 'low' ? '<span class="badge badge-muted">低优先</span>' : ''}
+              ${t.category ? `<span class="badge badge-info">${Utils.escape(t.category)}</span>` : ''}
+              <span style="font-size:12px;color:var(--text-muted);">${Utils.timeAgo(t.createdAt)}</span>
+            </div>
+          </div>
+          <span class="task-delete" onclick="deleteTask('${t.id}')">✕</span>
+        </div>
+      `).join('');
+    }
+
+    function bindTaskEvents() {
+      // 任务事件通过 onclick 直接绑定
+    }
+
+    function toggleTask(id) {
+      Store.toggleTask(id);
+      renderPage();
+    }
+
+    function deleteTask(id) {
+      if (confirm('确定删除这个任务？')) {
+        Store.deleteTask(id);
+        renderPage();
+        Utils.toast('任务已删除');
+      }
+    }
+
+    function clearOldTasks() {
+      if (confirm('确定清理所有已完成的旧任务？')) {
+        const tasks = Store.getTasks();
+        const today = new Date().toDateString();
+        const remaining = tasks.filter(t => 
+          new Date(t.createdAt).toDateString() === today || !t.done
+        );
+        Store.saveTasks(remaining);
+        renderPage();
+        Utils.toast('已清理旧任务');
+      }
+    }
+
+    function openAddTaskModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay show';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">➕ 添加任务</div>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+          </div>
+          <div class="form-group">
+            <label class="label">任务内容</label>
+            <textarea class="textarea" id="task-text" placeholder="比如：拍一条早起vlog，记录从起床到出门的全过程..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="label">优先级</label>
+              <select class="select" id="task-priority">
+                <option value="high">🔴 高优先</option>
+                <option value="medium" selected>🟡 中优先</option>
+                <option value="low">⚪ 低优先</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="label">分类</label>
+              <select class="select" id="task-category">
+                <option value="">无分类</option>
+                <option value="拍摄">拍摄</option>
+                <option value="剪辑">剪辑</option>
+                <option value="选题">选题</option>
+                <option value="发布">发布</option>
+                <option value="复盘">复盘</option>
+                <option value="学习">学习</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">取消</button>
+            <button class="btn btn-primary" onclick="submitTask()">添加</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      document.getElementById('task-text').focus();
+    }
+
+    function submitTask() {
+      const text = document.getElementById('task-text').value.trim();
+      const priority = document.getElementById('task-priority').value;
+      const category = document.getElementById('task-category').value;
+      
+      if (!text) {
+        Utils.toast('请输入任务内容', 'error');
+        return;
+      }
+
+      Store.addTask({ text, priority, category });
+      document.querySelector('.modal-overlay').remove();
+      renderPage();
+      Utils.toast('任务已添加');
+    }
+
+    // 启动
+    renderPage();
+  </script>
+</body>
+</html>

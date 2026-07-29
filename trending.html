@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>热门视频 · 创作者工作台</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <script src="assets/app.js"></script>
+  <script>
+    let currentFilter = 'all';
+    let showBreakdownId = null;
+
+    function renderPage() {
+      const stats = Store.getStats();
+      const videos = Store.getVideos();
+      
+      initPage('trending', '热门视频库', '抖音自拍vlog · 生活记录 · 可拆解二创对标视频');
+
+      const actions = document.getElementById('page-actions');
+      actions.innerHTML = `
+        <button class="btn btn-ghost" onclick="openCrawlModal()">🕷️ 爬取视频</button>
+        <button class="btn btn-primary" onclick="openAddVideoModal()">➕ 手动添加</button>
+      `;
+
+      const content = document.getElementById('page-content');
+
+      // 统计
+      const totalLikes = videos.reduce((s, v) => s + (v.likes || 0), 0);
+      const breakdownCount = videos.filter(v => v.breakdown).length;
+
+      content.innerHTML = `
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">收藏视频</div>
+            <div class="stat-value">${videos.length}</div>
+            <div class="stat-trend">对标素材库</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">总点赞</div>
+            <div class="stat-value">${Utils.formatNumber(totalLikes)}</div>
+            <div class="stat-trend">所有视频点赞之和</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-label">已拆解</div>
+            <div class="stat-value">${breakdownCount}</div>
+            <div class="stat-trend">完成二创拆解的视频</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">待拆解</div>
+            <div class="stat-value">${videos.length - breakdownCount}</div>
+            <div class="stat-trend">还没做拆解分析</div>
+          </div>
+        </div>
+
+        <!-- 筛选 -->
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn ${currentFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="setFilter('all')">全部</button>
+            <button class="btn ${currentFilter === 'breakdown' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="setFilter('breakdown')">已拆解</button>
+            <button class="btn ${currentFilter === 'pending' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="setFilter('pending')">待拆解</button>
+            <button class="btn ${currentFilter === 'favorite' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="setFilter('favorite')">⭐ 收藏</button>
+          </div>
+        </div>
+
+        <!-- 视频列表 -->
+        <div id="video-list">
+          ${renderVideoList()}
+        </div>
+      `;
+    }
+
+    function renderVideoList() {
+      let videos = Store.getVideos();
+      
+      if (currentFilter === 'breakdown') {
+        videos = videos.filter(v => v.breakdown);
+      } else if (currentFilter === 'pending') {
+        videos = videos.filter(v => !v.breakdown);
+      } else if (currentFilter === 'favorite') {
+        videos = videos.filter(v => v.favorite);
+      }
+
+      if (videos.length === 0) {
+        return `
+          <div class="card">
+            <div class="empty-state">
+              <div class="icon">🔥</div>
+              <div class="title">还没有视频</div>
+              <div class="desc">点击「爬取视频」自动抓取，或「手动添加」录入视频信息</div>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="video-grid">
+          ${videos.map(v => renderVideoCard(v)).join('')}
+        </div>
+      `;
+    }
+
+    function renderVideoCard(v) {
+      const b = v.breakdown || {};
+      return `
+        <div class="video-card" data-id="${v.id}">
+          <div class="video-thumb">
+            ${v.cover 
+              ? `<img src="${Utils.escape(v.cover)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">` 
+              : ''}
+            <div class="video-thumb-placeholder" style="${v.cover ? 'display:none' : ''}">🎬</div>
+            ${v.duration ? `<div class="video-duration">${Utils.escape(v.duration)}</div>` : ''}
+            ${v.favorite ? '<div style="position:absolute;top:8px;left:8px;font-size:20px;">⭐</div>' : ''}
+          </div>
+          <div class="video-body">
+            <div class="video-title">${Utils.escape(v.title)}</div>
+            <div class="video-author">
+              <span>👤 ${Utils.escape(v.author)}</span>
+              ${v.publishedAt ? `<span style="margin-left:auto;">${Utils.timeAgo(v.publishedAt)}</span>` : ''}
+            </div>
+            <div class="video-stats">
+              <div class="video-stat">❤️ ${Utils.formatNumber(v.likes || 0)}</div>
+              <div class="video-stat">💬 ${Utils.formatNumber(v.comments || 0)}</div>
+              <div class="video-stat">🔄 ${Utils.formatNumber(v.shares || 0)}</div>
+              <div class="video-stat">👁️ ${Utils.formatNumber(v.views || 0)}</div>
+            </div>
+            ${v.tags && v.tags.length > 0 ? `
+              <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;">
+                ${v.tags.map(t => `<span class="badge badge-info">${Utils.escape(t)}</span>`).join('')}
+              </div>
+            ` : ''}
+            <div class="video-actions">
+              ${v.url ? `<a href="${Utils.escape(v.url)}" target="_blank" class="btn btn-ghost btn-sm">▶️ 观看</a>` : ''}
+              <button class="btn btn-ghost btn-sm" onclick="toggleBreakdown('${v.id}')">
+                ${v.breakdown ? '📝 查看拆解' : '✏️ 二创拆解'}
+              </button>
+              <button class="btn btn-ghost btn-sm" onclick="toggleFavorite('${v.id}')">${v.favorite ? '⭐' : '☆'}</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteVideo('${v.id}')">🗑️</button>
+            </div>
+            ${showBreakdownId === v.id ? renderBreakdownPanel(v) : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBreakdownPanel(v) {
+      const b = v.breakdown || {};
+      return `
+        <div class="breakdown-panel show">
+          <div class="breakdown-section">
+            <div class="breakdown-label">🎯 选题角度</div>
+            <div class="breakdown-text">${b.angle || '点击编辑添加拆解'}</div>
+          </div>
+          <div class="breakdown-section">
+            <div class="breakdown-label">🪝 开头钩子（前3秒）</div>
+            <div class="breakdown-text">${b.hook || '未填写'}</div>
+          </div>
+          <div class="breakdown-section">
+            <div class="breakdown-label">✂️ 剪辑节奏</div>
+            <div class="breakdown-text">${b.rhythm || '未填写'}</div>
+          </div>
+          <div class="breakdown-section">
+            <div class="breakdown-label">💡 可模仿点</div>
+            <div class="breakdown-text">${b.imitate || '未填写'}</div>
+          </div>
+          <div class="breakdown-section">
+            <div class="breakdown-label">⚡ 差异化建议（如何超越）</div>
+            <div class="breakdown-text">${b.differentiate || '未填写'}</div>
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="openBreakdownModal('${v.id}')">✏️ 编辑拆解</button>
+        </div>
+      `;
+    }
+
+    function setFilter(f) {
+      currentFilter = f;
+      document.getElementById('video-list').innerHTML = renderVideoList();
+      // 更新筛选按钮状态
+      const buttons = document.querySelectorAll('.card .btn-sm');
+      // 简单刷新
+      renderPage();
+    }
+
+    function toggleBreakdown(id) {
+      showBreakdownId = showBreakdownId === id ? null : id;
+      document.getElementById('video-list').innerHTML = renderVideoList();
+    }
+
+    function toggleFavorite(id) {
+      const v = Store.getVideos().find(x => x.id === id);
+      Store.updateVideo(id, { favorite: !v.favorite });
+      renderPage();
+      Utils.toast(v.favorite ? '已取消收藏' : '已收藏 ⭐');
+    }
+
+    function deleteVideo(id) {
+      if (confirm('确定删除这个视频？')) {
+        Store.deleteVideo(id);
+        renderPage();
+        Utils.toast('视频已删除');
+      }
+    }
+
+    function openAddVideoModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay show';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">➕ 手动添加视频</div>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+          </div>
+          <div class="form-group">
+            <label class="label">视频标题 *</label>
+            <input class="input" id="v-title" placeholder="视频标题">
+          </div>
+          <div class="form-group">
+            <label class="label">作者</label>
+            <input class="input" id="v-author" placeholder="作者/账号名">
+          </div>
+          <div class="form-group">
+            <label class="label">视频链接</label>
+            <input class="input" id="v-url" placeholder="https://www.douyin.com/video/...">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="label">点赞数</label>
+              <input class="input" id="v-likes" type="number" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label class="label">评论数</label>
+              <input class="input" id="v-comments" type="number" placeholder="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="label">分享数</label>
+              <input class="input" id="v-shares" type="number" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label class="label">播放量</label>
+              <input class="input" id="v-views" type="number" placeholder="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="label">标签（逗号分隔）</label>
+            <input class="input" id="v-tags" placeholder="vlog,日常,自拍">
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">取消</button>
+            <button class="btn btn-primary" onclick="submitVideo()">添加</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function submitVideo() {
+      const title = document.getElementById('v-title').value.trim();
+      if (!title) { Utils.toast('请输入视频标题', 'error'); return; }
+      
+      const tags = document.getElementById('v-tags').value.trim();
+      Store.addVideo({
+        title,
+        author: document.getElementById('v-author').value.trim() || '未知',
+        url: document.getElementById('v-url').value.trim(),
+        likes: parseInt(document.getElementById('v-likes').value) || 0,
+        comments: parseInt(document.getElementById('v-comments').value) || 0,
+        shares: parseInt(document.getElementById('v-shares').value) || 0,
+        views: parseInt(document.getElementById('v-views').value) || 0,
+        tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+      });
+      document.querySelector('.modal-overlay').remove();
+      renderPage();
+      Utils.toast('视频已添加');
+    }
+
+    function openBreakdownModal(videoId) {
+      const v = Store.getVideos().find(x => x.id === videoId);
+      const b = v.breakdown || {};
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay show';
+      modal.innerHTML = `
+        <div class="modal" style="max-width:700px;">
+          <div class="modal-header">
+            <div class="modal-title">📝 二创拆解 · ${Utils.escape(v.title)}</div>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+          </div>
+          <div style="margin-bottom:16px;padding:12px;background:var(--bg-hover);border-radius:6px;font-size:13px;color:var(--text-secondary);">
+            💡 拆解模板：分析选题角度 → 提炼开头钩子 → 观察剪辑节奏 → 找可模仿点 → 思考差异化
+          </div>
+          <div class="form-group">
+            <label class="label">🎯 选题角度（这个视频选了什么切入点？）</label>
+            <textarea class="textarea" id="b-angle" placeholder="比如：用「一天只花10块钱」挑战记录日常生活...">${Utils.escape(b.angle)}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="label">🪝 开头钩子（前3秒怎么抓住观众的？）</label>
+            <textarea class="textarea" id="b-hook" placeholder="比如：直接展示结果画面 + 逆向悬念「你绝对想不到...」">${Utils.escape(b.hook)}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="label">✂️ 剪辑节奏（镜头切换、音乐、转场）</label>
+            <textarea class="textarea" id="b-rhythm" placeholder="比如：3秒一个镜头切换，用踩点音乐，转场用遮挡过渡...">${Utils.escape(b.rhythm)}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="label">💡 可模仿点（哪些可以直接学？）</label>
+            <textarea class="textarea" id="b-imitate" placeholder="比如：开头直接展示高潮画面、用倒计时制造紧迫感、结尾留彩蛋...">${Utils.escape(b.imitate)}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="label">⚡ 差异化建议（如何做出更好的版本？）</label>
+            <textarea class="textarea" id="b-differentiate" placeholder="比如：加入个人特色解说、用不同场景、增加互动环节...">${Utils.escape(b.differentiate)}</textarea>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">取消</button>
+            <button class="btn btn-primary" onclick="submitBreakdown('${videoId}')">保存拆解</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function submitBreakdown(videoId) {
+      const breakdown = {
+        angle: document.getElementById('b-angle').value.trim(),
+        hook: document.getElementById('b-hook').value.trim(),
+        rhythm: document.getElementById('b-rhythm').value.trim(),
+        imitate: document.getElementById('b-imitate').value.trim(),
+        differentiate: document.getElementById('b-differentiate').value.trim(),
+      };
+      Store.updateVideo(videoId, { breakdown });
+      document.querySelector('.modal-overlay').remove();
+      showBreakdownId = videoId;
+      renderPage();
+      Utils.toast('拆解已保存');
+    }
+
+    function openCrawlModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay show';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">🕷️ 爬取抖音视频</div>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+          </div>
+          <div style="margin-bottom:16px;padding:14px;background:var(--warning-soft);border-radius:6px;border-left:3px solid var(--warning);font-size:13px;color:var(--warning);">
+            ⚠️ <b>使用须知：</b><br>
+            1. 爬虫脚本位于 <code style="background:var(--bg-input);padding:2px 6px;border-radius:4px;">scripts/crawler.py</code><br>
+            2. 运行命令：<code style="background:var(--bg-input);padding:2px 6px;border-radius:4px;">python3 scripts/crawler.py</code><br>
+            3. 爬取结果保存到 <code style="background:var(--bg-input);padding:2px 6px;border-radius:4px;">data/crawled_videos.json</code><br>
+            4. 抖音有反爬机制，可能需要更新Cookie<br>
+            5. 也可使用手动添加功能
+          </div>
+          <div class="form-group">
+            <label class="label">搜索关键词</label>
+            <input class="input" id="crawl-keyword" value="自拍vlog 生活记录 日常" placeholder="搜索关键词">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="label">爬取数量</label>
+              <input class="input" id="crawl-count" type="number" value="20">
+            </div>
+            <div class="form-group">
+              <label class="label">排序方式</label>
+              <select class="select" id="crawl-sort">
+                <option value="likes">按点赞排序</option>
+                <option value="newest">按最新发布</option>
+                <option value="comments">按评论排序</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">取消</button>
+            <button class="btn btn-primary" onclick="startCrawl()">生成配置并查看说明</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function startCrawl() {
+      const keyword = document.getElementById('crawl-keyword').value.trim();
+      const count = document.getElementById('crawl-count').value;
+      const sort = document.getElementById('crawl-sort').value;
+      
+      // 保存配置
+      Store.set('crawl_config', { keyword, count, sort, lastRun: new Date().toISOString() });
+      
+      document.querySelector('.modal-overlay').remove();
+      
+      // 显示执行说明
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay show';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">📋 爬取执行指南</div>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+          </div>
+          <div style="font-size:14px;line-height:2;">
+            <p style="margin-bottom:12px;">已保存爬取配置，请在<b>终端</b>执行以下步骤：</p>
+            <div style="background:var(--bg-input);padding:14px;border-radius:8px;font-family:monospace;font-size:13px;margin-bottom:12px;">
+              <div style="color:var(--text-muted);"># 1. 进入工作台目录</div>
+              <div>cd creator-workbench</div>
+              <br>
+              <div style="color:var(--text-muted);"># 2. 运行爬虫</div>
+              <div>python3 scripts/crawler.py --keyword "${keyword}" --count ${count} --sort ${sort}</div>
+              <br>
+              <div style="color:var(--text-muted);"># 3. 导入到工作台</div>
+              <div>python3 scripts/crawler.py --import</div>
+            </div>
+            <p style="font-size:13px;color:var(--text-secondary);">爬取完成后，数据会自动导入到下方视频列表。如果反爬限制无法运行，请使用「手动添加」功能。</p>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">关闭</button>
+            <button class="btn btn-primary" onclick="loadCrawledData()">📥 导入已爬取数据</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function loadCrawledData() {
+      // 模拟导入数据说明
+      document.querySelector('.modal-overlay').remove();
+      
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay show';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">📥 导入爬取数据</div>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+          </div>
+          <div class="form-group">
+            <label class="label">粘贴JSON数据（从 data/crawled_videos.json 复制）</label>
+            <textarea class="textarea" id="import-json" style="min-height:200px;font-family:monospace;font-size:12px;" placeholder='[{"title":"...","author":"...","likes":1234,...}]'></textarea>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">取消</button>
+            <button class="btn btn-primary" onclick="doImport()">导入</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function doImport() {
+      const json = document.getElementById('import-json').value.trim();
+      if (!json) { Utils.toast('请粘贴JSON数据', 'error'); return; }
+      
+      try {
+        const videos = JSON.parse(json);
+        if (!Array.isArray(videos)) { Utils.toast('数据格式错误：需要数组', 'error'); return; }
+        
+        let count = 0;
+        videos.forEach(v => {
+          if (!v.title) return;
+          Store.addVideo({
+            title: v.title,
+            author: v.author || '未知',
+            url: v.url || '',
+            cover: v.cover || '',
+            likes: v.likes || 0,
+            comments: v.comments || 0,
+            shares: v.shares || 0,
+            views: v.views || 0,
+            tags: v.tags || [],
+            duration: v.duration || '',
+            publishedAt: v.publishedAt || '',
+          });
+          count++;
+        });
+        
+        document.querySelector('.modal-overlay').remove();
+        renderPage();
+        Utils.toast(`成功导入 ${count} 个视频`);
+      } catch(e) {
+        Utils.toast('JSON格式错误：' + e.message, 'error');
+      }
+    }
+
+    renderPage();
+  </script>
+</body>
+</html>

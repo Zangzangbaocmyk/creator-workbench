@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>内容复盘 · 创作者工作台</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <script src="assets/app.js"></script>
+  <script>
+    let currentTab = 'new';
+
+    function renderPage() {
+      const reviews = Store.getReviews();
+      initPage('review', '内容复盘', '四维度深度复盘 · 追踪优化迭代 · 沉淀经验');
+
+      const actions = document.getElementById('page-actions');
+      actions.innerHTML = `
+        <button class="btn btn-primary" onclick="switchTab('new')">➕ 新建复盘</button>
+      `;
+
+      const content = document.getElementById('page-content');
+
+      // 统计
+      const avgScore = reviews.length > 0 
+        ? (reviews.reduce((s, r) => s + (r.overallScore || 0), 0) / reviews.length).toFixed(1) 
+        : '—';
+      const improvements = reviews.flatMap(r => r.optimizations || []);
+      const resolvedCount = improvements.filter(i => i.resolved).length;
+
+      content.innerHTML = `
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">总复盘次数</div>
+            <div class="stat-value">${reviews.length}</div>
+            <div class="stat-trend">内容迭代轮次</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">平均自评</div>
+            <div class="stat-value">${avgScore}</div>
+            <div class="stat-trend">满分10分</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-label">优化项</div>
+            <div class="stat-value">${improvements.length}</div>
+            <div class="stat-trend">已发现待优化点</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">已改进</div>
+            <div class="stat-value">${resolvedCount}</div>
+            <div class="stat-trend">优化项已落地</div>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <div class="tab ${currentTab === 'new' ? 'active' : ''}" onclick="switchTab('new')">➕ 新建复盘</div>
+          <div class="tab ${currentTab === 'history' ? 'active' : ''}" onclick="switchTab('history')">📚 历史复盘 (${reviews.length})</div>
+          <div class="tab ${currentTab === 'improvements' ? 'active' : ''}" onclick="switchTab('improvements')">⚡ 优化追踪 (${improvements.length})</div>
+        </div>
+
+        <div id="tab-content"></div>
+      `;
+
+      renderTabContent();
+    }
+
+    function renderTabContent() {
+      const el = document.getElementById('tab-content');
+      if (currentTab === 'new') {
+        el.innerHTML = renderNewReview();
+      } else if (currentTab === 'history') {
+        el.innerHTML = renderHistory();
+      } else if (currentTab === 'improvements') {
+        el.innerHTML = renderImprovements();
+      }
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      renderPage();
+    }
+
+    function renderNewReview() {
+      const today = Utils.today();
+      return `
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📝 新建内容复盘</div>
+          </div>
+          
+          <!-- 基本信息 -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="label">复盘日期</label>
+              <input class="input" id="r-date" type="date" value="${today}">
+            </div>
+            <div class="form-group">
+              <label class="label">视频标题/选题</label>
+              <input class="input" id="r-title" placeholder="这次发布的内容标题">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="label">发布平台</label>
+              <select class="select" id="r-platform">
+                <option value="抖音">抖音</option>
+                <option value="小红书">小红书</option>
+                <option value="B站">B站</option>
+                <option value="快手">快手</option>
+                <option value="视频号">视频号</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="label">整体自评 (1-10)</label>
+              <input class="input" id="r-score" type="number" min="1" max="10" value="7">
+            </div>
+          </div>
+
+          <!-- 数据复盘 -->
+          <div style="border-top:1px solid var(--border);margin:16px 0;padding-top:16px;">
+            <h3 style="font-size:15px;margin-bottom:12px;color:var(--accent);">📊 数据复盘</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="label">播放量</label>
+                <input class="input" id="r-views" type="number" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label class="label">点赞数</label>
+                <input class="input" id="r-likes" type="number" placeholder="0">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="label">评论数</label>
+                <input class="input" id="r-comments" type="number" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label class="label">收藏数</label>
+                <input class="input" id="r-favorites" type="number" placeholder="0">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="label">数据表现总结</label>
+              <textarea class="textarea" id="r-data-notes" placeholder="比如：完播率较低，前3秒流失严重；评论互动较好，有3条神评论..."></textarea>
+            </div>
+          </div>
+
+          <!-- 内容复盘 -->
+          <div style="border-top:1px solid var(--border);margin:16px 0;padding-top:16px;">
+            <h3 style="font-size:15px;margin-bottom:12px;color:var(--success);">🎬 内容复盘</h3>
+            <div class="form-group">
+              <label class="label">选题评估（选题好不好？为什么？）</label>
+              <textarea class="textarea" id="r-topic" placeholder="比如：选题切中目标用户痛点，但竞争较大，需要差异化角度..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="label">标题文案评估</label>
+              <textarea class="textarea" id="r-title-review" placeholder="比如：标题有悬念但信息量不够，可以加数字和情绪词..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="label">开头钩子（前3秒效果）</label>
+              <textarea class="textarea" id="r-hook" placeholder="比如：开头用了直接展示结果的方式，但节奏偏慢，观众容易划走..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="label">内容结构 & 剪辑节奏</label>
+              <textarea class="textarea" id="r-structure" placeholder="比如：整体分为3段，中段拖沓，转场单一，可以加踩点音乐..."></textarea>
+            </div>
+          </div>
+
+          <!-- 表现复盘 -->
+          <div style="border-top:1px solid var(--border);margin:16px 0;padding-top:16px;">
+            <h3 style="font-size:15px;margin-bottom:12px;color:var(--purple);">🎭 表现复盘</h3>
+            <div class="form-group">
+              <label class="label">镜头表现（状态、表情、肢体语言）</label>
+              <textarea class="textarea" id="r-camera" placeholder="比如：面对镜头略显紧张，眼神游离；笑得不够自然；手势偏少..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="label">语言表达（语速、口齿、感染力）</label>
+              <textarea class="textarea" id="r-speech" placeholder="比如：语速偏快，有些地方含糊；情绪到位但感染力可以更强..."></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="label">穿搭评分 (1-5)</label>
+                <input class="input" id="r-outfit" type="number" min="1" max="5" value="3">
+              </div>
+              <div class="form-group">
+                <label class="label">场景评分 (1-5)</label>
+                <input class="input" id="r-scene" type="number" min="1" max="5" value="3">
+              </div>
+            </div>
+          </div>
+
+          <!-- 发布策略复盘 -->
+          <div style="border-top:1px solid var(--border);margin:16px 0;padding-top:16px;">
+            <h3 style="font-size:15px;margin-bottom:12px;color:var(--info);">📅 发布策略复盘</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="label">发布时间</label>
+                <input class="input" id="r-pub-time" type="time" value="18:00">
+              </div>
+              <div class="form-group">
+                <label class="label">发布时间评估</label>
+                <select class="select" id="r-time-eval">
+                  <option value="good">⏰ 时间选择好</option>
+                  <option value="bad">⏰ 时间不理想</option>
+                  <option value="unknown">⏰ 不确定</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="label">话题标签使用</label>
+              <input class="input" id="r-hashtags" placeholder="#vlog日常 #生活记录 #自拍...">
+            </div>
+            <div class="form-group">
+              <label class="label">封面选择评估</label>
+              <textarea class="textarea" id="r-cover" placeholder="比如：封面选了静态截图，不够吸引人，应该选有情绪张力的画面..."></textarea>
+            </div>
+          </div>
+
+          <!-- 优化计划 -->
+          <div style="border-top:1px solid var(--border);margin:16px 0;padding-top:16px;">
+            <h3 style="font-size:15px;margin-bottom:12px;color:var(--warning);">⚡ 优化计划（下次怎么做更好）</h3>
+            <div id="optimization-list">
+              ${renderOptInputs()}
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="addOptInput()" style="margin-top:8px;">➕ 添加优化项</button>
+          </div>
+
+          <div class="form-group">
+            <label class="label">总体感悟 & 下次目标</label>
+            <textarea class="textarea" id="r-summary" style="min-height:100px;" placeholder="比如：这次最大的收获是发现了选题方向，下次目标是：1）提升开头3秒完播率；2）减少无效镜头；3）尝试新的转场方式..."></textarea>
+          </div>
+
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+            <button class="btn btn-ghost" onclick="renderPage()">清空</button>
+            <button class="btn btn-primary" onclick="saveReview()" style="padding:10px 28px;">💾 保存复盘</button>
+          </div>
+        </div>
+      `;
+    }
+
+    let optCount = 2;
+
+    function renderOptInputs() {
+      optCount = 2;
+      return Array.from({length: optCount}, (_, i) => optInputHTML(i)).join('');
+    }
+
+    function optInputHTML(index) {
+      return `
+        <div class="opt-item" data-idx="${index}" style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:end;">
+          <div>
+            <label class="label">优化点</label>
+            <input class="input opt-text" placeholder="比如：开头加悬念">
+          </div>
+          <div>
+            <label class="label">具体行动</label>
+            <input class="input opt-action" placeholder="比如：用倒叙手法开头">
+          </div>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="removeOpt(this)">✕</button>
+        </div>
+      `;
+    }
+
+    function addOptInput() {
+      const container = document.getElementById('optimization-list');
+      const div = document.createElement('div');
+      div.innerHTML = optInputHTML(optCount);
+      container.appendChild(div.firstChild);
+      optCount++;
+    }
+
+    function removeOpt(btn) {
+      btn.closest('.opt-item').remove();
+    }
+
+    function saveReview() {
+      const title = document.getElementById('r-title').value.trim();
+      if (!title) { Utils.toast('请输入视频标题/选题', 'error'); return; }
+
+      // 收集优化项
+      const optimizations = [];
+      document.querySelectorAll('.opt-item').forEach(item => {
+        const text = item.querySelector('.opt-text').value.trim();
+        const action = item.querySelector('.opt-action').value.trim();
+        if (text) optimizations.push({ text, action, resolved: false });
+      });
+
+      const review = {
+        date: document.getElementById('r-date').value,
+        title,
+        platform: document.getElementById('r-platform').value,
+        overallScore: parseInt(document.getElementById('r-score').value) || 0,
+        
+        dataReview: {
+          views: parseInt(document.getElementById('r-views').value) || 0,
+          likes: parseInt(document.getElementById('r-likes').value) || 0,
+          comments: parseInt(document.getElementById('r-comments').value) || 0,
+          favorites: parseInt(document.getElementById('r-favorites').value) || 0,
+          notes: document.getElementById('r-data-notes').value.trim(),
+        },
+        
+        contentReview: {
+          topic: document.getElementById('r-topic').value.trim(),
+          titleReview: document.getElementById('r-title-review').value.trim(),
+          hook: document.getElementById('r-hook').value.trim(),
+          structure: document.getElementById('r-structure').value.trim(),
+        },
+        
+        performanceReview: {
+          camera: document.getElementById('r-camera').value.trim(),
+          speech: document.getElementById('r-speech').value.trim(),
+          outfit: parseInt(document.getElementById('r-outfit').value) || 0,
+          scene: parseInt(document.getElementById('r-scene').value) || 0,
+        },
+        
+        publishReview: {
+          pubTime: document.getElementById('r-pub-time').value,
+          timeEval: document.getElementById('r-time-eval').value,
+          hashtags: document.getElementById('r-hashtags').value.trim(),
+          cover: document.getElementById('r-cover').value.trim(),
+        },
+        
+        optimizations,
+        summary: document.getElementById('r-summary').value.trim(),
+      };
+
+      Store.addReview(review);
+      Utils.toast('复盘已保存 📊');
+      switchTab('history');
+    }
+
+    function renderHistory() {
+      const reviews = Store.getReviews();
+      if (reviews.length === 0) {
+        return `
+          <div class="card">
+            <div class="empty-state">
+              <div class="icon">📊</div>
+              <div class="title">还没有复盘记录</div>
+              <div class="desc">切到「新建复盘」开始第一次复盘</div>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="timeline">
+          ${reviews.map(r => `
+            <div class="timeline-item">
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title">${Utils.escape(r.title)}</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">
+                      ${r.date} · ${r.platform} · 
+                      <span style="color:var(--warning);">⭐ ${r.overallScore}/10</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:6px;">
+                    <button class="btn btn-ghost btn-sm" onclick="expandReview('${r.id}', this)">展开</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteReview('${r.id}')">🗑️</button>
+                  </div>
+                </div>
+                
+                <div class="review-detail" style="display:none;">
+                  ${r.dataReview.notes ? `
+                    <div style="margin-bottom:12px;">
+                      <div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:4px;">📊 数据复盘</div>
+                      <div style="display:flex;gap:16px;font-size:13px;margin-bottom:4px;">
+                        <span>👁️ ${Utils.formatNumber(r.dataReview.views)}</span>
+                        <span>❤️ ${Utils.formatNumber(r.dataReview.likes)}</span>
+                        <span>💬 ${Utils.formatNumber(r.dataReview.comments)}</span>
+                        <span>⭐ ${Utils.formatNumber(r.dataReview.favorites)}</span>
+                      </div>
+                      <div style="font-size:13px;color:var(--text-secondary);">${Utils.escape(r.dataReview.notes)}</div>
+                    </div>
+                  ` : ''}
+
+                  ${r.contentReview.hook ? `
+                    <div style="margin-bottom:12px;">
+                      <div style="font-size:12px;color:var(--success);font-weight:600;margin-bottom:4px;">🎬 内容复盘</div>
+                      <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;">
+                        ${r.contentReview.topic ? `<div><b>选题：</b>${Utils.escape(r.contentReview.topic)}</div>` : ''}
+                        ${r.contentReview.hook ? `<div><b>钩子：</b>${Utils.escape(r.contentReview.hook)}</div>` : ''}
+                        ${r.contentReview.structure ? `<div><b>结构：</b>${Utils.escape(r.contentReview.structure)}</div>` : ''}
+                      </div>
+                    </div>
+                  ` : ''}
+
+                  ${r.performanceReview.camera ? `
+                    <div style="margin-bottom:12px;">
+                      <div style="font-size:12px;color:var(--purple);font-weight:600;margin-bottom:4px;">🎭 表现复盘</div>
+                      <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;">
+                        ${r.performanceReview.camera ? `<div><b>镜头：</b>${Utils.escape(r.performanceReview.camera)}</div>` : ''}
+                        ${r.performanceReview.speech ? `<div><b>语言：</b>${Utils.escape(r.performanceReview.speech)}</div>` : ''}
+                        <div>穿搭 ${'⭐'.repeat(r.performanceReview.outfit || 0)} | 场景 ${'⭐'.repeat(r.performanceReview.scene || 0)}</div>
+                      </div>
+                    </div>
+                  ` : ''}
+
+                  ${r.optimizations && r.optimizations.length > 0 ? `
+                    <div style="margin-bottom:12px;">
+                      <div style="font-size:12px;color:var(--warning);font-weight:600;margin-bottom:4px;">⚡ 优化计划</div>
+                      ${r.optimizations.map((o, i) => `
+                        <div style="font-size:13px;margin-bottom:4px;display:flex;align-items:flex-start;gap:6px;">
+                          <span style="color:${o.resolved ? 'var(--success)' : 'var(--warning)'};">${o.resolved ? '✅' : '⏳'}</span>
+                          <div>
+                            <b>${Utils.escape(o.text)}</b>
+                            ${o.action ? ` — ${Utils.escape(o.action)}` : ''}
+                          </div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+
+                  ${r.summary ? `
+                    <div style="margin-bottom:0;padding-top:12px;border-top:1px solid var(--border);">
+                      <div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-bottom:4px;">📝 总体感悟</div>
+                      <div style="font-size:13px;color:var(--text-primary);line-height:1.6;">${Utils.escape(r.summary)}</div>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function expandReview(id, btn) {
+      const detail = btn.closest('.card').querySelector('.review-detail');
+      const isHidden = detail.style.display === 'none';
+      detail.style.display = isHidden ? 'block' : 'none';
+      btn.textContent = isHidden ? '收起' : '展开';
+    }
+
+    function deleteReview(id) {
+      if (confirm('确定删除这条复盘？')) {
+        Store.deleteReview(id);
+        renderPage();
+        Utils.toast('复盘已删除');
+      }
+    }
+
+    function renderImprovements() {
+      const reviews = Store.getReviews();
+      const allOpts = [];
+      reviews.forEach(r => {
+        (r.optimizations || []).forEach((o, i) => {
+          allOpts.push({ ...o, reviewTitle: r.title, reviewDate: r.date, reviewId: r.id, optIndex: i });
+        });
+      });
+
+      if (allOpts.length === 0) {
+        return `
+          <div class="card">
+            <div class="empty-state">
+              <div class="icon">⚡</div>
+              <div class="title">还没有优化项</div>
+              <div class="desc">在复盘时添加优化计划，这里会自动汇总追踪</div>
+            </div>
+          </div>
+        `;
+      }
+
+      const pending = allOpts.filter(o => !o.resolved);
+      const resolved = allOpts.filter(o => o.resolved);
+
+      return `
+        ${pending.length > 0 ? `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">⏳ 待改进 (${pending.length})</div>
+            </div>
+            ${pending.map(o => `
+              <div style="padding:12px;background:var(--bg-hover);border-radius:6px;margin-bottom:8px;border-left:3px solid var(--warning);">
+                <div style="font-weight:600;margin-bottom:4px;">${Utils.escape(o.text)}</div>
+                ${o.action ? `<div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;">→ ${Utils.escape(o.action)}</div>` : ''}
+                <div style="font-size:12px;color:var(--text-muted);display:flex;justify-content:space-between;align-items:center;">
+                  <span>来自：${Utils.escape(o.reviewTitle)} · ${o.reviewDate}</span>
+                  <button class="btn btn-success btn-sm" style="background:var(--success-soft);color:var(--success);" onclick="resolveOpt('${o.reviewId}', ${o.optIndex})">✅ 标记已改进</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        ${resolved.length > 0 ? `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">✅ 已改进 (${resolved.length})</div>
+            </div>
+            ${resolved.map(o => `
+              <div style="padding:12px;background:var(--success-soft);border-radius:6px;margin-bottom:8px;border-left:3px solid var(--success);opacity:0.8;">
+                <div style="font-weight:600;margin-bottom:4px;">✅ ${Utils.escape(o.text)}</div>
+                ${o.action ? `<div style="font-size:13px;color:var(--text-secondary);">${Utils.escape(o.action)}</div>` : ''}
+                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">来自：${Utils.escape(o.reviewTitle)} · ${o.reviewDate}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      `;
+    }
+
+    function resolveOpt(reviewId, optIndex) {
+      const reviews = Store.getReviews();
+      const r = reviews.find(x => x.id === reviewId);
+      if (r && r.optimizations && r.optimizations[optIndex]) {
+        r.optimizations[optIndex].resolved = true;
+        Store.set('reviews', reviews);
+        renderPage();
+        Utils.toast('已标记为已改进 ✅');
+      }
+    }
+
+    renderPage();
+  </script>
+</body>
+</html>
