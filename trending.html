@@ -15,56 +15,92 @@
     // 数据源地址（可替换为你自己的JSON地址）
     const DATA_URL = 'https://raw.githubusercontent.com/Zangzangbaocmyk/creator-workbench/main/data/crawled_videos.json';
 
-    // 页面加载时自动拉取数据
+    // 页面加载时自动从GitHub拉取数据（每次打开都尝试更新）
     async function autoLoadData() {
-      // 如果本地已有视频数据，跳过自动加载（优先本地数据）
-      const localVideos = Store.getVideos();
-      if (localVideos.length > 0) {
-        renderPage();
-        return;
-      }
-      
-      // 检查是否已经自动加载过
-      const lastAutoLoad = Store.get('auto_load_time');
+      const lastUpdate = Store.get('data_last_updated', 0);
       const now = Date.now();
-      if (lastAutoLoad && (now - lastAutoLoad) < 3600000) {
-        // 1小时内加载过，不再重复加载
-        renderPage();
-        return;
+      const shouldFetch = (now - lastUpdate) > 600000; // 10分钟内不重复拉取
+      
+      // 先显示加载中
+      const localVideos = Store.getVideos();
+      if (localVideos.length === 0) {
+        // 首次使用，显示加载状态
+        document.getElementById('page-content').innerHTML = `
+          <div class="card">
+            <div class="empty-state">
+              <div class="icon">⏳</div>
+              <div class="title">正在从云端同步数据...</div>
+              <div class="desc">首次加载可能需要几秒钟</div>
+            </div>
+          </div>
+        `;
       }
       
-      try {
-        console.log('🔄 自动加载热门视频数据...');
-        const resp = await fetch(DATA_URL);
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const data = await resp.json();
-        if (Array.isArray(data) && data.length > 0) {
-          let count = 0;
-          data.forEach(v => {
-            if (!v.title) return;
-            Store.addVideo({
-              title: v.title,
-              author: v.author || '未知',
-              url: v.url || '',
-              cover: v.cover || '',
-              likes: v.likes || 0,
-              comments: v.comments || 0,
-              shares: v.shares || 0,
-              views: v.views || 0,
-              tags: v.tags || [],
-              duration: v.duration || '',
-              publishedAt: v.publishedAt || '',
-              breakdown: v.breakdown || null,
+      if (shouldFetch) {
+        try {
+          console.log('🔄 从云端同步热门视频数据...');
+          const resp = await fetch(DATA_URL + '?t=' + now);
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          const data = await resp.json();
+          if (Array.isArray(data) && data.length > 0) {
+            // 获取本地手动添加的视频ID（不覆盖用户手动添加的）
+            const currentVideos = Store.getVideos();
+            const localIds = new Set(currentVideos.filter(v => v._manual).map(v => v._originalId || v.id));
+            
+            // 清空旧的自动加载数据，保留手动添加的
+            const manualVideos = currentVideos.filter(v => v._manual);
+            Store.saveVideos(manualVideos);
+            
+            // 导入新数据
+            let count = 0;
+            data.forEach(v => {
+              if (!v.title) return;
+              const vid = v.title + '|' + v.author;
+              if (localIds.has(vid)) return;
+              
+              Store.addVideo({
+                title: v.title,
+                author: v.author || '未知',
+                url: v.url || '',
+                cover: v.cover || '',
+                likes: v.likes || 0,
+                comments: v.comments || 0,
+                shares: v.shares || 0,
+                views: v.views || 0,
+                tags: v.tags || [],
+                duration: v.duration || '',
+                publishedAt: v.publishedAt || '',
+                breakdown: v.breakdown || null,
+                _originalId: vid,
+              });
+              count++;
             });
-            count++;
-          });
-          Store.set('auto_load_time', now);
-          console.log(`✅ 自动加载了 ${count} 个视频`);
+            Store.set('data_last_updated', now);
+            console.log(`✅ 同步了 ${count} 条新视频`);
+          }
+        } catch(e) {
+          console.log('⚠️ 云端同步失败，使用本地缓存:', e.message);
         }
-      } catch(e) {
-        console.log('⚠️ 自动加载失败，使用本地数据:', e.message);
       }
       renderPage();
+    }
+
+    // 手动刷新数据
+    function refreshData() {
+      Store.remove('data_last_updated');
+      const btn = document.getElementById('refresh-btn');
+      btn.textContent = '⏳ 刷新中...';
+      btn.disabled = true;
+      
+      // 清除自动数据重新加载
+      const manualVideos = Store.getVideos().filter(v => v._manual);
+      Store.saveVideos(manualVideos);
+      autoLoadData().then(() => {
+        if (document.getElementById('refresh-btn')) {
+          document.getElementById('refresh-btn').textContent = '🔄 刷新数据';
+          document.getElementById('refresh-btn').disabled = false;
+        }
+      });
     }
 
     function renderPage() {
@@ -75,6 +111,7 @@
 
       const actions = document.getElementById('page-actions');
       actions.innerHTML = `
+        <button class="btn btn-ghost btn-sm" onclick="refreshData()" id="refresh-btn">🔄 刷新数据</button>
         <button class="btn btn-ghost" onclick="openCrawlModal()">🕷️ 爬取视频</button>
         <button class="btn btn-primary" onclick="openAddVideoModal()">➕ 手动添加</button>
       `;
@@ -325,6 +362,7 @@
         shares: parseInt(document.getElementById('v-shares').value) || 0,
         views: parseInt(document.getElementById('v-views').value) || 0,
         tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+        _manual: true,
       });
       document.querySelector('.modal-overlay').remove();
       renderPage();
